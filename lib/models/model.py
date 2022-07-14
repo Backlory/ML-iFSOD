@@ -42,6 +42,8 @@ def load_model(model, model_path, optimizer=None, resume=False,
   for k in state_dict_:
     if k.startswith('module') and not k.startswith('module_list'):
       state_dict[k[7:]] = state_dict_[k]
+    elif k.startswith('model') and not k.startswith('model_list'):
+      state_dict[k[6:]] = state_dict_[k]
     else:
       state_dict[k] = state_dict_[k]
 

@@ -44,7 +44,7 @@ def main(opt):
             Dataset(opt, 'val'), 
             batch_size=1, 
             shuffle=False,
-            num_workers=1,
+            num_workers=0,
             pin_memory=True
     )
 
@@ -113,11 +113,15 @@ if __name__ == '__main__':
     args = ["--task","ctdet",
             "--exp_id","coco_resdcn101_base",
             "--arch","res_101", #resdcn_101
-            "--batch_size","2",
+            "--batch_size","6",
             "--master_batch","1",
+            "--val_intervals", "1",
             "--lr","1.25e-4",
             "--gpus","0",
-            "--num_workers","0"]
+            "--num_workers","0",
+            "--resume",
+            "--save_all"
+            ]
     opt = opts().parse(args)
 
     main(opt)
