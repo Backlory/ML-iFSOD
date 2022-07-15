@@ -1,3 +1,13 @@
+'''
+Author: Backlory
+github: https://github.com/Backlory
+Date: 2022-07-12 23:46:16
+LastEditors: backlory's desktop dbdx_liyaning@126.com
+LastEditTime: 2022-07-14 23:40:00
+Description: 
+
+Copyright (c) 2022 by Backlory, All Rights Reserved. 
+'''
 import os
 import torch
 import sys
@@ -12,9 +22,9 @@ def add_path(path):
 
 from opts import opts
 
-from models.model import *
-from models.networks.pose_dla_dcn import *
-from datasets.dataset_factory import get_dataset
+from lib.models.model import *
+from lib.models.networks.pose_dla_dcn import *
+from lib.datasets.dataset_factory import get_dataset
 
 
 

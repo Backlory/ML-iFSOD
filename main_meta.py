@@ -10,21 +10,21 @@ import numpy as np
 
 import torch
 import torch.utils.data
-from opts import opts
-from models.model import create_model, load_model, save_model,load_feature_extractor,load_fs_stat,save_hm_head,save_entire_model,load_ft_locator
-from logger import Logger
-from datasets.dataset_factory import get_dataset,dataset_factory
-from models.networks.resnet_dcn import get_meta_net,get_fs_net
-from models.networks.pose_dla_dcn import get_dla_meta_net,get_dla_fs_net
-from trains.meta_train import MetaTrainer
-from detectors.detector_factory import detector_factory
+from lib.opts import opts
+from lib.models.model import create_model, load_model, save_model,load_feature_extractor,load_fs_stat,save_hm_head,save_entire_model,load_ft_locator
+from lib.logger import Logger
+from lib.datasets.dataset_factory import get_dataset,dataset_factory
+from lib.models.networks.resnet_dcn import get_meta_net,get_fs_net
+from lib.models.networks.pose_dla_dcn import get_dla_meta_net,get_dla_fs_net
+from lib.trains.meta_train import MetaTrainer
+from lib.detectors.detector_factory import detector_factory
 from progress.bar import Bar
 from tqdm import tqdm
 
 
-from models.losses import *
-from models.utils import _sigmoid
-from utils.oracle_utils import gen_oracle_map
+from lib.models.losses import *
+from lib.models.utils import _sigmoid
+from lib.utils.oracle_utils import gen_oracle_map
 from test import PrefetchDataset
 
 def add_path(path):
@@ -33,7 +33,7 @@ def add_path(path):
 trains_path = os.path.join(os.path.dirname(__file__),'lib','trains')
 add_path(trains_path)
 
-from utils.utils import AverageMeter
+from lib.utils.utils import AverageMeter
 
 
 def main(opt):
