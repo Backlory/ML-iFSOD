@@ -107,20 +107,18 @@ def main(opt):
     logger.close()
 
 if __name__ == '__main__':
-    
-
 
     args = ["--task","ctdet",
             "--exp_id","coco_resdcn101_base",
-            "--arch","resdcn_101", #resdcn_101
-            "--batch_size","6",
+            "--arch","res_101", #resdcn_101, res_101
+            "--batch_size","1",
             "--master_batch","1",
             "--val_intervals", "1",
             "--lr","1.25e-4",
             "--gpus","0",
             "--num_workers","0",
             #"--resume",
-            "--save_all"
+            #"--save_all"
             ]
     opt = opts().parse(args)
 

@@ -7,7 +7,7 @@ import torch
 from progress.bar import Bar
 from models.data_parallel import DataParallel
 from utils.utils import AverageMeter
-
+from torch.cuda.amp import GradScaler, autocast
 
 class ModelWithLoss(torch.nn.Module):
   def __init__(self, model, loss):
@@ -25,6 +25,7 @@ class BaseTrainer(object):
     self, opt, model, optimizer=None):
     self.opt = opt
     self.optimizer = optimizer
+    self.gradscaler = GradScaler(enabled=True)
     self.loss_stats, self.loss = self._get_losses(opt)
     self.model_with_loss = ModelWithLoss(model, self.loss)
 
@@ -66,12 +67,19 @@ class BaseTrainer(object):
       for k in batch:
         if k != 'meta':
           batch[k] = batch[k].to(device=opt.device, non_blocking=True)     #batch中各个head对应的tensor都要to device
-      output, loss, loss_stats = model_with_loss(batch)
-      loss = loss.mean()
+      
+      with autocast():
+        output, loss, loss_stats = model_with_loss(batch)
+        loss = loss.mean()
       if phase == 'train':
         self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+        
+        self.scaler.scale(loss).backward()
+        self.scaler.unscale_(self.optimizer)
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
+        #loss.backward()
+        #self.optimizer.step()
       batch_time.update(time.time() - end)
       end = time.time()
 
