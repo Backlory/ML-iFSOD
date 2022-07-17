@@ -28,7 +28,7 @@ class CtdetLoss(torch.nn.Module):
   def forward(self, outputs, batch):
     opt = self.opt
     hm_loss, wh_loss, off_loss = 0, 0, 0
-    for s in range(opt.num_stacks):  #num_stacks 只在hourglass为2，其他为1
+    for s in range(opt.num_stacks):  #num_stacks为1
       output = outputs[s]
       if not opt.mse_loss:
         output['hm'] = _sigmoid(output['hm'])

@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import numpy as np
 import cv2
-from .ddd_utils import compute_box_3d, project_to_image, draw_box_3d
 import os
 
 class Debugger(object):
@@ -309,55 +308,6 @@ class Debugger(object):
             self.add_coco_bbox(bbox, dets[i, -1], dets[i, 2], img_id=img_id)
 
 
-  def add_3d_detection(
-    self, image_or_path, dets, calib, show_txt=False, 
-    center_thresh=0.5, img_id='det'):
-    if isinstance(image_or_path, np.ndarray):
-      self.imgs[img_id] = image_or_path
-    else: 
-      self.imgs[img_id] = cv2.imread(image_or_path)
-    for cat in dets:
-      for i in range(len(dets[cat])):
-        cl = (self.colors[cat - 1, 0, 0]).tolist()
-        if dets[cat][i, -1] > center_thresh:
-          dim = dets[cat][i, 5:8]
-          loc  = dets[cat][i, 8:11]
-          rot_y = dets[cat][i, 11]
-          # loc[1] = loc[1] - dim[0] / 2 + dim[0] / 2 / self.dim_scale
-          # dim = dim / self.dim_scale
-          if loc[2] > 1:
-            box_3d = compute_box_3d(dim, loc, rot_y)
-            box_2d = project_to_image(box_3d, calib)
-            self.imgs[img_id] = draw_box_3d(self.imgs[img_id], box_2d, cl)
-
-  def compose_vis_add(
-    self, img_path, dets, calib,
-    center_thresh, pred, bev, img_id='out'):
-    self.imgs[img_id] = cv2.imread(img_path)
-    # h, w = self.imgs[img_id].shape[:2]
-    # pred = cv2.resize(pred, (h, w))
-    h, w = pred.shape[:2]
-    hs, ws = self.imgs[img_id].shape[0] / h, self.imgs[img_id].shape[1] / w
-    self.imgs[img_id] = cv2.resize(self.imgs[img_id], (w, h))
-    self.add_blend_img(self.imgs[img_id], pred, img_id)
-    for cat in dets:
-      for i in range(len(dets[cat])):
-        cl = (self.colors[cat - 1, 0, 0]).tolist()
-        if dets[cat][i, -1] > center_thresh:
-          dim = dets[cat][i, 5:8]
-          loc  = dets[cat][i, 8:11]
-          rot_y = dets[cat][i, 11]
-          # loc[1] = loc[1] - dim[0] / 2 + dim[0] / 2 / self.dim_scale
-          # dim = dim / self.dim_scale
-          if loc[2] > 1:
-            box_3d = compute_box_3d(dim, loc, rot_y)
-            box_2d = project_to_image(box_3d, calib)
-            box_2d[:, 0] /= hs
-            box_2d[:, 1] /= ws
-            self.imgs[img_id] = draw_box_3d(self.imgs[img_id], box_2d, cl)
-    self.imgs[img_id] = np.concatenate(
-      [self.imgs[img_id], self.imgs[bev]], axis=1)
-
   def add_2d_detection(
     self, img, dets, show_box=False, show_txt=True, 
     center_thresh=0.5, img_id='det'):
@@ -370,63 +320,6 @@ class Debugger(object):
           self.add_coco_bbox(
             bbox, cat - 1, dets[cat][i, -1], 
             show_txt=show_txt, img_id=img_id)
-
-  def add_bird_view(self, dets, center_thresh=0.3, img_id='bird'):
-    bird_view = np.ones((self.out_size, self.out_size, 3), dtype=np.uint8) * 230
-    for cat in dets:
-      cl = (self.colors[cat - 1, 0, 0]).tolist()
-      lc = (250, 152, 12)
-      for i in range(len(dets[cat])):
-        if dets[cat][i, -1] > center_thresh:
-          dim = dets[cat][i, 5:8]
-          loc  = dets[cat][i, 8:11]
-          rot_y = dets[cat][i, 11]
-          rect = compute_box_3d(dim, loc, rot_y)[:4, [0, 2]]
-          for k in range(4):
-            rect[k] = self.project_3d_to_bird(rect[k])
-            # cv2.circle(bird_view, (rect[k][0], rect[k][1]), 2, lc, -1)
-          cv2.polylines(
-              bird_view,[rect.reshape(-1, 1, 2).astype(np.int32)],
-              True,lc,2,lineType=cv2.LINE_AA)
-          for e in [[0, 1]]:
-            t = 4 if e == [0, 1] else 1
-            cv2.line(bird_view, (rect[e[0]][0], rect[e[0]][1]),
-                    (rect[e[1]][0], rect[e[1]][1]), lc, t,
-                    lineType=cv2.LINE_AA)
-    self.imgs[img_id] = bird_view
-
-  def add_bird_views(self, dets_dt, dets_gt, center_thresh=0.3, img_id='bird'):
-    alpha = 0.5
-    bird_view = np.ones((self.out_size, self.out_size, 3), dtype=np.uint8) * 230
-    for ii, (dets, lc, cc) in enumerate(
-      [(dets_gt, (12, 49, 250), (0, 0, 255)), 
-       (dets_dt, (250, 152, 12), (255, 0, 0))]):
-      # cc = np.array(lc, dtype=np.uint8).reshape(1, 1, 3)
-      for cat in dets:
-        cl = (self.colors[cat - 1, 0, 0]).tolist()
-        for i in range(len(dets[cat])):
-          if dets[cat][i, -1] > center_thresh:
-            dim = dets[cat][i, 5:8]
-            loc  = dets[cat][i, 8:11]
-            rot_y = dets[cat][i, 11]
-            rect = compute_box_3d(dim, loc, rot_y)[:4, [0, 2]]
-            for k in range(4):
-              rect[k] = self.project_3d_to_bird(rect[k])
-            if ii == 0:
-              cv2.fillPoly(
-                bird_view,[rect.reshape(-1, 1, 2).astype(np.int32)],
-                lc,lineType=cv2.LINE_AA)
-            else:
-              cv2.polylines(
-                bird_view,[rect.reshape(-1, 1, 2).astype(np.int32)],
-                True,lc,2,lineType=cv2.LINE_AA)
-            # for e in [[0, 1], [1, 2], [2, 3], [3, 0]]:
-            for e in [[0, 1]]:
-              t = 4 if e == [0, 1] else 1
-              cv2.line(bird_view, (rect[e[0]][0], rect[e[0]][1]),
-                      (rect[e[1]][0], rect[e[1]][1]), lc, t,
-                      lineType=cv2.LINE_AA)
-    self.imgs[img_id] = bird_view
 
 
 kitti_class_name = [

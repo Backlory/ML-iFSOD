@@ -11,7 +11,7 @@ class opts(object):
     self.parser = argparse.ArgumentParser()
     # basic experiment setting
     self.parser.add_argument('--task', default='ctdet',
-                             help='ctdet | ddd | multi_pose | exdet')
+                             help='ctdet | multi_pose | exdet')
     self.parser.add_argument('--dataset', default='coco',
                              help='coco | kitti | coco_hp | pascal')
     self.parser.add_argument('--exp_id', default='default')
@@ -75,7 +75,7 @@ class opts(object):
     self.parser.add_argument('--arch', default='dla_34', 
                              help='model architecture. Currently tested'
                                   'res_18 | res_101 | resdcn_18 | resdcn_101 |'
-                                  'dlav0_34 | dla_34 | hourglass')
+                                  '')
     self.parser.add_argument('--head_conv', type=int, default=-1,
                              help='conv layer channels for output head'
                                   '0 for no conv layer'
@@ -188,16 +188,6 @@ class opts(object):
     self.parser.add_argument('--aug_rot', type=float, default=0, 
                              help='probability of applying '
                                   'rotation augmentation.')
-    # ddd
-    self.parser.add_argument('--aug_ddd', type=float, default=0.5,
-                             help='probability of applying crop augmentation.')
-    self.parser.add_argument('--rect_mask', action='store_true',
-                             help='for ignored object, apply mask on the '
-                                  'rectangular region or just center point.')
-    self.parser.add_argument('--kitti_split', default='3dop',
-                             help='different validation split for kitti: '
-                                  '3dop | subcnn')
-
     # loss
     self.parser.add_argument('--mse_loss', action='store_true',
                              help='use mse loss or focal loss to train '
@@ -218,13 +208,6 @@ class opts(object):
                              help='loss weight for human pose offset.')
     self.parser.add_argument('--hm_hp_weight', type=float, default=1,
                              help='loss weight for human keypoint heatmap.')
-    # ddd
-    self.parser.add_argument('--dep_weight', type=float, default=1,
-                             help='loss weight for depth.')
-    self.parser.add_argument('--dim_weight', type=float, default=1,
-                             help='loss weight for 3d bounding box size.')
-    self.parser.add_argument('--rot_weight', type=float, default=1,
-                             help='loss weight for orientation.')
     self.parser.add_argument('--peak_thresh', type=float, default=0.2)
     
     # task
@@ -297,8 +280,8 @@ class opts(object):
 
     if opt.head_conv == -1: # init default head_conv
       opt.head_conv = 256 if 'dla' in opt.arch or 'resdcn' in opt.arch else 64
-    opt.pad = 127 if 'hourglass' in opt.arch else 31
-    opt.num_stacks = 2 if opt.arch == 'hourglass' else 1
+    opt.pad = 31
+    opt.num_stacks = 1
 
     if opt.trainval:
       opt.val_intervals = 100000000
@@ -368,14 +351,6 @@ class opts(object):
                    'hm_c': opt.num_classes}
       if opt.reg_offset:
         opt.heads.update({'reg_t': 2, 'reg_l': 2, 'reg_b': 2, 'reg_r': 2})
-    elif opt.task == 'ddd':
-      # assert opt.dataset in ['gta', 'kitti', 'viper']
-      opt.heads = {'hm': opt.num_classes, 'dep': 1, 'rot': 8, 'dim': 3}
-      if opt.reg_bbox:
-        opt.heads.update(
-          {'wh': 2})
-      if opt.reg_offset:
-        opt.heads.update({'reg': 2})
     elif opt.task == 'ctdet':
       # assert opt.dataset in ['pascal', 'coco']
       opt.heads = {'hm': opt.num_classes,
@@ -422,10 +397,7 @@ class opts(object):
         'mean': [0.408, 0.447, 0.470], 'std': [0.289, 0.274, 0.278],
         'dataset': 'coco_hp', 'num_joints': 17,
         'flip_idx': [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], 
-                     [11, 12], [13, 14], [15, 16]]},
-      'ddd': {'default_resolution': [384, 1280], 'num_classes': 3, 
-                'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225],
-                'dataset': 'kitti'},
+                     [11, 12], [13, 14], [15, 16]]}
     }
     class Struct:
       def __init__(self, entries):

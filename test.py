@@ -33,11 +33,7 @@ class PrefetchDataset(torch.utils.data.Dataset):
     image = cv2.imread(img_path)
     images, meta = {}, {}
     for scale in self.opt.test_scales:
-      if self.opt.task == 'ddd':
-        images[scale], meta[scale] = self.pre_process_func(
-          image, scale, img_info['calib'])
-      else:
-        images[scale], meta[scale] = self.pre_process_func(image, scale)
+      images[scale], meta[scale] = self.pre_process_func(image, scale)
     return img_id, {'images': images, 'image': image, 'meta': meta}
 
   def __len__(self):
@@ -103,10 +99,7 @@ def test(opt):
     img_info = dataset.coco.loadImgs(ids=[img_id])[0]
     img_path = os.path.join(dataset.img_dir, img_info['file_name'])
 
-    if opt.task == 'ddd':
-      ret = detector.run(img_path, img_info['calib'])
-    else:
-      ret = detector.run(img_path)
+    ret = detector.run(img_path)
     
     results[img_id] = ret['results']
 

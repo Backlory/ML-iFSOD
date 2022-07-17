@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from .sample.ddd import DddDataset
 from .sample.exdet import EXDetDataset
 from .sample.ctdet import CTDetDataset,metaDataset,fewShotDataset,TwoStageDataset
 from .sample.multi_pose import MultiPoseDataset
@@ -28,7 +27,6 @@ dataset_factory = {
 _sample_factory = {
   'exdet': EXDetDataset,
   'ctdet': CTDetDataset,
-  'ddd': DddDataset,
   'multi_pose': MultiPoseDataset,
   'ctdet_meta':metaDataset,
   'few_shot':fewShotDataset,
