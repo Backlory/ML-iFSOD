@@ -45,7 +45,7 @@ def main(opt):
             batch_size=1, 
             shuffle=False,
             num_workers=0,
-            pin_memory=True
+            pin_memory=False
     )
 
     if opt.test:
@@ -58,7 +58,7 @@ def main(opt):
             batch_size=opt.batch_size, 
             shuffle=True,
             num_workers=opt.num_workers,
-            pin_memory=True,
+            pin_memory=False,
             drop_last=True
     )
 
@@ -107,18 +107,18 @@ def main(opt):
     logger.close()
 
 if __name__ == '__main__':
-
     args = ["--task","ctdet",
             "--exp_id","coco_resdcn101_base",
-            "--arch","res_101", #resdcn_101, res_101
-            "--batch_size","1",
+            "--arch","resdcn_101", #resdcn_101, res_101
+            "--batch_size","8",
             "--master_batch","1",
-            "--val_intervals", "1",
             "--lr","1.25e-4",
             "--gpus","0",
-            "--num_workers","0",
+            "--num_workers","2",
             #"--resume",
-            #"--save_all"
+            "--save_all",
+            "--val_intervals", "5",
+            "--visual_path", "temp/visual"
             ]
     opt = opts().parse(args)
 

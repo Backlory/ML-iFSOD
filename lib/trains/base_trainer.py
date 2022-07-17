@@ -68,18 +68,18 @@ class BaseTrainer(object):
         if k != 'meta':
           batch[k] = batch[k].to(device=opt.device, non_blocking=True)     #batch中各个head对应的tensor都要to device
       
-      with autocast():
-        output, loss, loss_stats = model_with_loss(batch)
-        loss = loss.mean()
+      #with autocast():
+      output, loss, loss_stats = model_with_loss(batch)
+      loss = loss.mean()
       if phase == 'train':
         self.optimizer.zero_grad()
         
-        self.scaler.scale(loss).backward()
-        self.scaler.unscale_(self.optimizer)
-        self.scaler.step(self.optimizer)
-        self.scaler.update()
-        #loss.backward()
-        #self.optimizer.step()
+        # self.gradscaler.scale(loss).backward()
+        # self.gradscaler.unscale_(self.optimizer)
+        # self.gradscaler.step(self.optimizer)
+        # self.gradscaler.update()
+        loss.backward()
+        self.optimizer.step()
       batch_time.update(time.time() - end)
       end = time.time()
 
