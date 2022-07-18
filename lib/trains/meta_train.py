@@ -46,7 +46,7 @@ class MetaTrainer(object):
         bar = Bar('{}/{}'.format(opt.task, opt.exp_id), max=num_iters)
         end = time.time()
         lr = self.optimizer.param_groups[0]['lr']
-        for iter_id, batch in enumerate(data_loader):
+        for iter_id, batch in enumerate(data_loader):   # there are lots of tasks[bs, 20, c, h, w] in the data_loader
             if iter_id >= num_iters:
                 break
             data_time.update(time.time() - end)
@@ -67,10 +67,11 @@ class MetaTrainer(object):
 
             avg_loss.update(
                     loss.item(), batch['input'].size(0))
-            Bar.suffix = Bar.suffix + '| Learner_Loss: {:.4f} | Avg_Learner_Loss: {:.4f} |lr:{:.4e} |update_lr:{:.2e}'.format(avg_loss.val,avg_loss.avg,lr,opt.update_lr)
-            if not opt.hide_data_time:
-                Bar.suffix = Bar.suffix + '|Data {dt.val:.3f}s({dt.avg:.3f}s) ' \
-                    '|Net {bt.avg:.3f}s'.format(dt=data_time, bt=batch_time)
+            Bar.suffix = Bar.suffix + '|Learner_Loss:{:.4f}|Avg_LL:{:.4f}|lr:{:.4e}|u_lr:{:.2e}'.format(avg_loss.val,avg_loss.avg,lr,opt.update_lr)
+            #u_lr = UPDATED LR, Avg_LL = Avg_Learner_Loss
+            # if not opt.hide_data_time:
+            #     Bar.suffix = Bar.suffix + '|Data {dt.val:.3f}s({dt.avg:.3f}s) ' \
+            #         '|Net {bt.avg:.3f}s'.format(dt=data_time, bt=batch_time)
             if opt.print_iter > 0:
                 if iter_id % opt.print_iter == 0:
                     print('{}/{}| {}'.format(opt.task, opt.exp_id, Bar.suffix)) 

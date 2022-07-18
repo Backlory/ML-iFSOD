@@ -498,10 +498,10 @@ class ResMeta(nn.Module):
 
 
 
-    def forward(self, batch):  
+    def forward(self, batch):   # use for meta learning
         loss_all = []
         batch_size = batch['hm'].shape[0]
-        for batch_id in range(batch_size):  
+        for batch_id in range(batch_size):      # 按任务顺序执行
             batch_ = {}
             for head in batch:
                 if head != 'meta':

@@ -45,7 +45,7 @@ def main(opt):
             batch_size=1, 
             shuffle=False,
             num_workers=0,
-            pin_memory=False
+            pin_memory=True
     )
 
     if opt.test:
@@ -58,7 +58,7 @@ def main(opt):
             batch_size=opt.batch_size, 
             shuffle=True,
             num_workers=opt.num_workers,
-            pin_memory=False,
+            pin_memory=True,
             drop_last=True
     )
 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
             "--lr","1.25e-4",
             "--gpus","0",
             "--num_workers","2",
-            #"--resume",
+            "--resume",
             "--save_all",
             "--val_intervals", "5",
             "--visual_path", "temp/visual"

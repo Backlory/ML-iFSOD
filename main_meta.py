@@ -91,20 +91,19 @@ def main(opt):
   trainer.set_device(opt.gpus, opt.chunk_sizes, opt.device)
 
   print('Setting up data...')
-  val_loader = torch.utils.data.DataLoader(
-      Dataset(opt, 'val'),
-      batch_size=1,
-      shuffle=False,
-      num_workers=1,
-      pin_memory=True
-  )
 
   if opt.test:
+    val_loader = torch.utils.data.DataLoader(
+        Dataset(opt, 'val'),
+        batch_size=1,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=True
+    )
     _, preds = trainer.val(0, val_loader)
     val_loader.dataset.run_eval(preds, opt.save_dir)
     return
   if not opt.fs_train:
-
     train_loader = torch.utils.data.DataLoader(
         Dataset(opt, 'train'),
         batch_size=opt.batch_size,
@@ -120,7 +119,7 @@ def main(opt):
     for epoch in range(start_epoch + 1, opt.num_epochs + 1):
       if epoch > 1:
         opt.data_seed = epoch - 1
-        train_loader.dataset.__init__(opt,'train')
+        train_loader.dataset.__init__(opt,'train')  # shuffle the meta-dataset on every epoch
       dec = (epoch - 1) // opt.lr_interval
       for param_group in optimizer.param_groups:
           param_group['lr'] *= (0.5**dec)
@@ -351,5 +350,35 @@ def _get_losses(opt):
 
 
 if __name__ == '__main__':
-  opt = opts().parse()
+  args = ["--task","ctdet_meta",
+        "--dataset","coco_meta",
+        "--num_workers","2",
+        "--gpus","0",
+        "--arch","resdcn_101",
+        "--exp_id","coco_resdcn101",
+        ]
+  args += [
+        #"--test",
+        #"--resume",
+        "--fs_train_type","base",
+        "--batch_size","2",   # here the batchsize means the quantity of task in one iteration.
+        "--master_batch","1",
+        "--num_epochs","3",
+        "--lr","1e-3",
+        "--update_lr","1e-3",
+        "--update_step","2",
+        "--fte_path","../exp/ctdet/coco_resdcn101_base/model_best.pth"]
+
+  # args += [
+  #       "--fs_train",
+  #       "--resume"
+  #       "--fs_train_type","novel",
+  #       "--fs_lr","8e-3",
+  #       "--fs_epoch","1",
+  #       "--Kshot","10",
+  #       "--test_type","x",
+  #       "--fs_batch_size","40",
+  #       "--fte_path","../exp/ctdet/coco_resdcn101_base_256/model_last.pth"]
+
+  opt=opts().parse(args)
   main(opt)

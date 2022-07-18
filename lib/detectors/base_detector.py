@@ -9,9 +9,9 @@ import time
 import torch
 import sys
 
-from models.model import create_model, load_model
-from utils.image import get_affine_transform
-from utils.debugger import Debugger
+from lib.models.model import create_model, load_model
+from lib.utils.image import get_affine_transform
+from lib.utils.debugger import Debugger
 
 
 class BaseDetector(object):

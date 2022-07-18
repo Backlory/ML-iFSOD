@@ -122,7 +122,7 @@ class COCO(data.Dataset):
     self.base_class_ind = [7, 9, 10, 11, 12, 13, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 
                           33, 34, 35, 36, 37, 38, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 
                           53, 54, 55, 59, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 
-                          77, 78, 79]
+                          77, 78, 79] # catname -> ind -> _valid_ids-> pycocotools
     self.catname2ind =     {'person': 0, 'bicycle': 1, 'car': 2, 'motorcycle': 3, 'airplane': 4, 'bus': 5, 'train': 6, 'truck': 7, 
                   'boat': 8, 'traffic light': 9, 'fire hydrant': 10, 'stop sign': 11, 'parking meter': 12, 'bench': 13, 
                   'bird': 14, 'cat': 15, 'dog': 16, 'horse': 17, 'sheep': 18, 'cow': 19, 'elephant': 20, 'bear': 21, 
@@ -161,7 +161,7 @@ class COCO(data.Dataset):
     if split == 'train':
       if opt.train_origin:
         self.images = self.coco.getImgIds()
-      else:
+      else:               # 只学习60个base类(7~79)
         for i in range(len(self.imgs_base)): 
             self.images = list(set(self.images)|set(self.imgs_base[i]))
     else:

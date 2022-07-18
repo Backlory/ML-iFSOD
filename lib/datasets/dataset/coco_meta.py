@@ -102,13 +102,13 @@ class MetaCOCO(data.Dataset):
     novel_files = glob.glob(os.path.join(novel_path,'*'))
     random.seed(opt.data_seed)
     for path in base_files: 
-      cls_id = int(os.path.basename(path).split('.')[0].split('_')[-1])  
+      cls_id = int(os.path.basename(path).split('.')[0].split('_')[-1])  #path = a_1.json
       with open(path,'r') as f:  
         img_ids = json.load(f)
         random.shuffle(img_ids)
         task = {'cls_id':cls_id,'samples':[]}
         for img_id in img_ids:
-          if len(task['samples']) < 20:  
+          if len(task['samples']) < 20:   # 20shot?
               task['samples'].append(img_id)
           else:
               self.tasks.append(task)
