@@ -103,7 +103,7 @@ class MetaCOCO(data.Dataset):
     random.seed(opt.data_seed)
     for path in base_files: 
       cls_id = int(os.path.basename(path).split('.')[0].split('_')[-1])  #path = a_1.json
-      with open(path,'r') as f:  
+      with open(path,'r') as f:
         img_ids = json.load(f)
         random.shuffle(img_ids)
         task = {'cls_id':cls_id,'samples':[]}
@@ -114,8 +114,15 @@ class MetaCOCO(data.Dataset):
               self.tasks.append(task)
               task = {'cls_id':cls_id,'samples':[]}
               task['samples'].append(img_id)
-
-
+    #def func(x):f = open(f"../data/coco/val_cat/base/val_{x}.json",'w');f.write(str(self.coco.getImgIds(catIds=[x])));f.close()
+    #[func(x) for x in a]
+    # a = np.array(self._valid_ids)[self.novel_class_ind]
+    # a = [1,2,3,4,5,6,7,9,16,17,18,19,20,21,44,62,63,64,67,72]
+    # self.novel_class_ind = [0, 1, 2, 3, 4, 5, 6, 8, 14, 15, 16, 17, 18, 19, 39, 56, 57, 58, 60, 62]
+    # self.base_class_ind = [7, 9, 10, 11, 12, 13, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 
+    #                       33, 34, 35, 36, 37, 38, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 
+    #                       53, 54, 55, 59, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 
+    #                       77, 78, 79]
     print('==> initializing coco 2017 {} data.'.format(split))
     self.coco = coco.COCO(self.annot_path)
     self.num_tasks = len(self.tasks)
@@ -244,6 +251,10 @@ class fewShotCOCO(data.Dataset):
     self.base_ids = [self.coco.getCatIds([cls_name])[0] for cls_name in self.base_class if cls_name != '__background__']
     with open(self.fs_sample,'r') as f:
       fs_samples = json.load(f)
+    
+    for x in fs_samples:    
+      #fs_samples[x] = fs_samples[x][:self.K]    [][][][][][][][][][][][][][]
+      fs_samples[x] = fs_samples[x][:60]  
 
     self.images = []
     if opt.fs_train_type == 'novel':
@@ -316,6 +327,7 @@ class classSpecFewShotCOCO(data.Dataset):
                    dtype=np.float32).reshape(1, 1, 3)
 
   def __init__(self, opt, split):
+    exit()
     super(classSpecFewShotCOCO, self).__init__()
     self.data_dir = os.path.join(opt.data_dir, 'coco')
     self.img_dir = os.path.join(self.data_dir, '{}2017'.format(split))
@@ -448,6 +460,7 @@ class valCOCO(data.Dataset):
                    dtype=np.float32).reshape(1, 1, 3)
 
   def __init__(self, opt, split):
+    exit()
     super(valCOCO, self).__init__()
     self.data_dir = os.path.join(opt.data_dir, 'coco')
     self.img_dir = os.path.join(self.data_dir, '{}2017'.format(split))

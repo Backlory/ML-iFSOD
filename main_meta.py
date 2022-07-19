@@ -169,8 +169,8 @@ def fewshot_train(fs_model,learner,base_model,loss_,data_loader,opt,fs_train_typ
 
 
   if not opt.ablate:
-    fs_stat = load_fs_stat(fs_model,learner.state_dict()) 
-    fs_model.load_state_dict(fs_stat,strict=False)
+    fs_stat = load_fs_stat(fs_model,learner.state_dict())         # get weights from learner
+    fs_model.load_state_dict(fs_stat,strict=False)                # load weights to fs_model
     fs_model = load_ft_locator(fs_model,base_model.state_dict())
   else:
     fs_model = load_feature_extractor(fs_model,opt.fte_path)
@@ -355,30 +355,32 @@ if __name__ == '__main__':
         "--num_workers","2",
         "--gpus","0",
         "--arch","resdcn_101",
-        "--exp_id","coco_resdcn101",
+        "--exp_id","03_05_train_coco_resdcn101_meta",
+        "--visual_path", "temp/visual",
         ]
-  args += [
-        #"--test",
-        #"--resume",
-        "--fs_train_type","base",
-        "--batch_size","2",   # here the batchsize means the quantity of task in one iteration.
-        "--master_batch","1",
-        "--num_epochs","3",
-        "--lr","1e-3",
-        "--update_lr","1e-3",
-        "--update_step","2",
-        "--fte_path","../exp/ctdet/coco_resdcn101_base/model_best.pth"]
-
-  # args += [
-  #       "--fs_train",
-  #       "--resume"
-  #       "--fs_train_type","novel",
-  #       "--fs_lr","8e-3",
-  #       "--fs_epoch","1",
-  #       "--Kshot","10",
-  #       "--test_type","x",
-  #       "--fs_batch_size","40",
-  #       "--fte_path","../exp/ctdet/coco_resdcn101_base_256/model_last.pth"]
+  if True:  # True, False
+    args += [
+          #"--test",
+          #"--resume",
+          "--fs_train_type","base",
+          "--batch_size","4",   # here the batchsize means the quantity of task in one iteration.
+          "--master_batch","1",
+          "--num_epochs","3",
+          "--lr","1e-3",
+          "--update_lr","1e-3",
+          "--update_step","2",
+          "--fte_path","../exp/ctdet/01_train_coco_resdcn101_base/model_last.pth"]
+  else:
+    args += [
+          "--fs_train",
+          "--resume",
+          "--fs_train_type","novel",
+          "--fs_lr","8e-3",
+          "--fs_epoch","1",
+          "--Kshot","10",
+          "--test_type","x",
+          "--fs_batch_size","40",
+          "--fte_path","../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/model_last.pth"] #_base_256?
 
   opt=opts().parse(args)
   main(opt)

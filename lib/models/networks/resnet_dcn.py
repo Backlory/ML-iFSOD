@@ -331,7 +331,7 @@ class Learner(nn.Module):
 
     def forward(self,x,wts=None):  
         if wts is None:
-            wts = list(self.parameters())
+            wts = list(self.parameters())   # 掏出自己的参数来
         else:
             wts_ = list(self.parameters())
             wts = list(wts)
@@ -345,13 +345,13 @@ class Learner(nn.Module):
         for head in self.heads:
             if self.head_conv > 0 :
                 w1,b1 = wts[idx],wts[idx+1]
-                w2,b2  = wts[idx+2],wts[idx+3]
+                w2,b2  = wts[idx+2],wts[idx+3]  #拿出卷积核 准备把head抄过来
                 
                 x_ = F.conv2d(x,w1,b1,stride = 1,padding = 1)
                 x_ = F.relu(x_,inplace=True)
                 z[head] = F.conv2d(x_,w2,b2,stride = 1,padding = 0)
 
-                idx += 4     
+                idx += 4
             else:
                 w,b = wts[idx],wts[idx+1]
                 z[head] = F.conv2d(x,w,b,stride = 1,padding = 0)
@@ -398,7 +398,10 @@ class ResMeta(nn.Module):
         self.head_conv = head_conv
         
         self.learner = Learner(heads,head_conv)
-        self.learner = self.learner_init(self.learner,opt)
+        try:
+            self.learner = self.learner_init(self.learner,opt)
+        except:
+            print("failed load weights of Learner.")
         for para in self.learner.parameters():
             if para.shape[0] == head_conv:
                 para.requires_grad = False
@@ -407,6 +410,7 @@ class ResMeta(nn.Module):
 
     def learner_init(self,learner,opt):
         state_dict_ = torch.load(opt.fte_path)['state_dict']
+        state_dict_ = {k[8:]:state_dict_[k]  for k in state_dict_ if k.startswith("learner.")}      # [][][][][][][][][][][][][][]
         state_dict = {key:learner.state_dict()[key] if key.startswith('hm.2') or key.startswith('reg.2') or key.startswith('wh.2') else state_dict_[key] for key in state_dict_ if key.startswith('hm') or key.startswith('wh') or key.startswith('reg')}
         learner.load_state_dict(state_dict)
         return learner
@@ -481,7 +485,7 @@ class ResMeta(nn.Module):
         loss = CtdetLoss(opt)
         return loss_states, loss
 
-    def compute_fast_weights(self,loss,parameters):
+    def compute_fast_weights(self,loss,parameters): # 快速地对模型中的部分参数执行一次梯度下降
         parameters = list(parameters)
         para = [p for p in parameters if p.shape[0] != self.head_conv]
         grad = torch.autograd.grad(loss,para)
@@ -523,7 +527,7 @@ class ResMeta(nn.Module):
             ret = {}
 
             ft = x   #图片特征
-            ft_spt,ft_qry = ft[:10],ft[10:]
+            ft_spt,ft_qry = ft[:10],ft[10:]             # 分为支持集和查询集
             
             label_spt = {head:batch_[head][:10] for head in batch_}
             label_qry = {head:batch_[head][10:] for head in batch_}
@@ -537,14 +541,14 @@ class ResMeta(nn.Module):
 
 
 
-            # 1. run the i-th task and compute loss for k=0
+            # run the i-th task and compute loss for k=0, and backward the loss
             outputs = self.learner(ft_spt, wts=None)
             loss,loss_stats = self.loss(outputs,label_spt)
-            fast_weights = self.compute_fast_weights(loss,self.learner.parameters())
+            fast_weights = self.compute_fast_weights(loss,self.learner.parameters())    # the weights of learner
 
 
 
-            for k in range(1, self.update_step):   
+            for k in range(1, self.update_step):   # support-update-query
                 outputs = self.learner(ft_spt, fast_weights)
                 loss,_ = self.loss(outputs, label_spt)
                 fast_weights = self.compute_fast_weights(loss,fast_weights)

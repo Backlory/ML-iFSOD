@@ -6,7 +6,8 @@ import torch
 import torch.nn as nn
 
 def _sigmoid(x):
-  y = torch.clamp(x.sigmoid_(), min=1e-4, max=1-1e-4)
+  x = x.sigmoid()
+  y = torch.clamp(x, min=1e-4, max=1-1e-4)
   return y
  
 def _gather_feat(feat, ind, mask=None):   #feat:[batch,h*w,c]    ind:[batch,K]   

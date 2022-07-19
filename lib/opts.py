@@ -320,7 +320,7 @@ class opts(object):
         opt.entire_model = os.path.join(opt.root_dir, 'exp', opt.task, opt.exp_id,'entire_model','entire_model_{}_last.pth'.format(str(opt.Kshot)))
       elif opt.dataset == 'pascal' or opt.fs_voc:
         opt.entire_model = os.path.join(opt.root_dir, 'exp', opt.task, opt.exp_id,'entire_model','entire_model_voc_{}_last.pth'.format(str(opt.Kshot)))
-    #if opt.fte_path == '':
+    #if opt.fte_path == '': # 一开始就是这样的
       #opt.fte_path = os.path.join(opt.exp_dir,'ctdet','coco_dla_base','model_best.pth')
     
     if opt.visual_path == '':

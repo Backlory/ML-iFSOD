@@ -108,7 +108,7 @@ def main(opt):
 
 if __name__ == '__main__':
     args = ["--task","ctdet",
-            "--exp_id","coco_resdcn101_base",
+            "--exp_id","01_train_coco_resdcn101_base",
             "--arch","resdcn_101", #resdcn_101, res_101
             "--batch_size","8",
             "--master_batch","1",

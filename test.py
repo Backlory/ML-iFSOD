@@ -103,21 +103,42 @@ def test(opt):
     
     results[img_id] = ret['results']
 
-    Bar.suffix = '[{0}/{1}]|Tot: {total:} |ETA: {eta:} '.format(
+    Bar.suffix = '[{0}/{1}]|Tot:{total:}|ETA:{eta:}'.format(
                    ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td)
     for t in avg_time_stats:
       avg_time_stats[t].update(ret[t])
-      Bar.suffix = Bar.suffix + '|{} {:.3f} '.format(t, avg_time_stats[t].avg)
+      Bar.suffix = Bar.suffix + '|{}={:.3f}'.format(t, avg_time_stats[t].avg)
     bar.next()
   bar.finish()
   dataset.run_eval(results, opt.save_dir)
 
 if __name__ == '__main__':
-  opt = opts().parse()
+  
+  args = [
+        "--visual_path", "temp/visual",
+        "--task","ctdet",
+        "--dataset","coco",
+        "--num_workers","1",
+        "--gpus","0",
+        "--arch","resdcn_101",
+        #
+        "--val_entire", 
+        "--not_prefetch_test",  #?
+        "--test_type", "x", #base, x, noval, all
+        
+        #
+        #"--exp_id", "02_test_coco_resdcn101_base",
+        #"--entire_model", "../exp/ctdet/01_train_coco_resdcn101_base/model_last.pth"
+        "--exp_id", "04_test_coco_resdcn101_meta",
+        "--entire_model", "../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/model_last.pth"
+        #"--exp_id", "06_test_coco_resdcn101_fewshot",
+        #"--entire_model", "../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/entire_model/entire_model_10_last_test.pth"
+        ]
+
+  opt = opts().parse(args)
   #print(opt.entire_model)
   #sys.exit(0)
   #opt.entire_model = '/data/cm/clone/CenterNet/CenterNet_ROOT/exp/ctdet_meta/coco_dla_meta_last/entire_model/entire_model_voc_10_last.pth'
-
   if opt.not_prefetch_test:
     test(opt)
   else:

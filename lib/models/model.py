@@ -38,6 +38,8 @@ def load_model(model, model_path, optimizer=None, resume=False,
       state_dict[k[7:]] = state_dict_[k]
     elif k.startswith('model') and not k.startswith('model_list'):
       state_dict[k[6:]] = state_dict_[k]
+    #elif k.startswith('learner.') and not k.startswith('model_list'):  # ][][][][][][][]only use when test the effect of meta-learning via main_meta.py 
+    #  state_dict[k[8:]] = state_dict_[k]
     else:
       state_dict[k] = state_dict_[k]
 
@@ -61,7 +63,7 @@ def load_model(model, model_path, optimizer=None, resume=False,
     if not (k in state_dict):
       print('No param {}.'.format(k) + msg)
       state_dict[k] = model_state_dict[k]
-  model.load_state_dict(state_dict, strict=True)  # false
+  model.load_state_dict(state_dict, strict=False)  # False
 
   # resume optimizer parameters
   if optimizer is not None and resume:
@@ -130,7 +132,7 @@ def load_feature_extractor(model, model_path):
     if not (k in state_dict):
       print('No param {}.'.format(k))
       state_dict[k] = model_state_dict[k]
-  model.load_state_dict(state_dict, strict=False)
+  model.load_state_dict(state_dict, strict=True)
 
   
   return model
@@ -173,16 +175,21 @@ def load_fs_stat(model,meta_stat_dict):
   return state_dict
 
 
-def load_ft_locator(fs_model,ft_model_state):
+def load_ft_locator(fs_model,ft_model_state): # It is used to implement incremential
   base_inds = [7, 9, 10, 11, 12, 13, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 59, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79]
   def backhook(module,grad_input,grad_output):
-    grad_input = list(grad_input)
-    mask_w = torch.ones_like(grad_input[1])
-    mask_b = torch.ones_like(grad_input[2])
-    mask_w[base_inds] = 0
-    mask_b[base_inds] = 0 
-    grad_input[1] *= mask_w.float()
-    grad_input[2] *= mask_b.float()
+    grad_input = list(grad_input)    
+    #print(len(grad_input))
+    #print(grad_input[0].shape)
+    #print(grad_input[1].shape)
+    mask_w = torch.ones_like(grad_input[0])   # 1 is here wrong ?
+    mask_b = torch.ones_like(grad_input[1])   # 2 
+    mask_w[:,base_inds,...] = 0 
+    mask_b[:,base_inds,...] = 0 
+    #mask_w[base_inds] = 0 
+    #mask_b[base_inds] = 0 
+    grad_input[0] *= mask_w.float()         # 1 is here wrong ?
+    grad_input[1] *= mask_b.float()         # 2
     return tuple(grad_input)
   
   fs_state = fs_model.state_dict()
@@ -202,8 +209,8 @@ def load_ft_locator(fs_model,ft_model_state):
 
 
   fs_model.load_state_dict(state_dict)
-  fs_model.hm[2].register_backward_hook(backhook)
-
+  #fs_model.hm[2].register_full_backward_hook(backhook)  #register_backward_hook
+  fs_model.hm[2].register_backward_hook(backhook)  #
   
   return fs_model
 

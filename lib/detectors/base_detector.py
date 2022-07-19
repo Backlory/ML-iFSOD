@@ -22,7 +22,7 @@ class BaseDetector(object):
       opt.device = torch.device('cpu')
     
     print('Creating model...')
-    self.model = create_model(opt.arch, opt.heads, opt.head_conv) if 'attn' not in opt.exp_id else get_attn_net(int(opt.arch.split('_')[-1]), opt.heads, opt.head_conv)
+    self.model = create_model(opt.arch, opt.heads, opt.head_conv) #if 'attn' not in opt.exp_id else get_attn_net(int(opt.arch.split('_')[-1]), opt.heads, opt.head_conv)
     if opt.val_entire: 
       self.model = load_model(self.model, opt.entire_model)
     else:
@@ -86,7 +86,7 @@ class BaseDetector(object):
   def run(self, image_or_path_or_tensor, meta=None):
     load_time, pre_time, net_time, dec_time, post_time = 0, 0, 0, 0, 0
     merge_time, tot_time = 0, 0
-    #debugger = Debugger(dataset=self.opt.dataset, ipynb=(self.opt.debug==3),theme=self.opt.debugger_theme)
+    #debugger = Debugger(dataset=self.opt.dataset, ipynb=(self.opt.debug==3),theme=self.opt.debugger_theme)  
     start_time = time.time()
     pre_processed = False
     if isinstance(image_or_path_or_tensor, np.ndarray):

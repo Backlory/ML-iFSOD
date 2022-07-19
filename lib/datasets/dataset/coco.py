@@ -275,24 +275,24 @@ class COCO(data.Dataset):
       log.close()
 
     else:
+      print('Test novel class.')
       coco_eval = COCOeval(save_dir,self.images,self.catIds_novel,self.coco, coco_dets, "bbox")
       coco_eval.evaluate()
       coco_eval.accumulate()
-      print('Test novel class.')
       coco_eval.summarize()
       print('\n')
 
+      print('Test base class.')
       coco_eval = COCOeval(save_dir,self.images,self.catIds_base,self.coco, coco_dets, "bbox")
       coco_eval.evaluate()
       coco_eval.accumulate()
-      print('Test base class.')
       coco_eval.summarize()
       print('\n')
 
+      print('Test all class.')
       coco_eval = COCOeval(save_dir,self.images,self.catIds_all,self.coco, coco_dets, "bbox")
       coco_eval.evaluate()
       coco_eval.accumulate()
-      print('Test all class.')
       coco_eval.summarize()
 
 
