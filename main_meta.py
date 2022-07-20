@@ -63,15 +63,20 @@ def main(opt):
 
   print('Creating model...')
   if 'res' in opt.arch:
-    model = get_meta_net(int(opt.arch.split('_')[-1]),opt)
-    model = load_feature_extractor(model,opt.fte_path)
-    fs_model = get_fs_net(int(opt.arch.split('_')[-1]),opt.heads,opt.head_conv)
+    print("load model with the weights of learner...")
+    model = get_meta_net(int(opt.arch.split('_')[-1]),opt)        # load the weights of learner, and do not need gradient.
+    print("load the weights of feature extractor...")
+    model = load_feature_extractor(model,opt.fte_path)            # load the weights of feature extractor.
+    print("get fs_model(just have a feature_extractor)...")
+    fs_model = get_fs_net(int(opt.arch.split('_')[-1]),opt.heads,opt.head_conv)       # fs_model don't have learner
   elif 'dla' in opt.arch:
     model = get_dla_meta_net(34,opt.heads,opt)
     model = load_feature_extractor(model,opt.fte_path)
     fs_model = get_dla_fs_net(34,opt.heads,opt.head_conv)
 
+  print("create base_model...")
   base_model = create_model(opt.arch, opt.heads, opt.head_conv)
+  print("load the weights of base_model...")
   base_model= load_model(base_model,opt.fte_path)
 
   loss_stats,loss_ = _get_losses(opt)
@@ -167,11 +172,10 @@ def fewshot_train(fs_model,learner,base_model,loss_,data_loader,opt,fs_train_typ
   opt = opt
   num_iters = len(data_loader) if opt.num_iters < 0 else opt.num_iters
 
-
   if not opt.ablate:
-    fs_stat = load_fs_stat(fs_model,learner.state_dict())         # get weights from learner
+    fs_stat = load_fs_stat(fs_model,learner.state_dict())         # get weights from learner. "learner." was converted as None
     fs_model.load_state_dict(fs_stat,strict=False)                # load weights to fs_model
-    fs_model = load_ft_locator(fs_model,base_model.state_dict())
+    fs_model = load_ft_locator(fs_model,base_model.state_dict())  # base_model
   else:
     fs_model = load_feature_extractor(fs_model,opt.fte_path)
     
@@ -181,7 +185,7 @@ def fewshot_train(fs_model,learner,base_model,loss_,data_loader,opt,fs_train_typ
   fs_model,fs_optimizer = set_device(fs_model,fs_optimizer,opt.gpus,opt.device)
   model_with_loss = ModelWithLoss(fs_model,loss_)
   model_with_loss.train()
-
+  # print([fs_model.state_dict()[x].requires_grad for x in fs_model.state_dict().keys()])
   losses = []
   if opt.Kshot == 10:
     warm_up_epochs = 15
@@ -246,8 +250,8 @@ def fewshot_train(fs_model,learner,base_model,loss_,data_loader,opt,fs_train_typ
       fs_lr = fs_optimizer.param_groups[0]['lr']
 
       avg_loss = sum(losses_e)/len(losses_e)
-      pbar.set_description('Fs_train_type:{} |Epoch:{} |Iteration:{} |fs_lr:{:.3e} |Loss:{:2f} |Avg_loss:{:.3f}'.format(fs_train_type.capitalize(),ep,iter_id,fs_lr,float(loss.item()),avg_loss))
-      log.write('Fs_train_type:{} |Epoch:{} |Iteration:{} |fs_lr:{:.3e} |Loss:{:2f} |Avg_loss:{:.3f} \n'.format(fs_train_type.capitalize(),ep,iter_id,fs_lr,float(loss.item()),avg_loss))
+      pbar.set_description('Fs_train_type:{} |Epoch:{} |fs_lr:{:.3e} |Loss:{:2f} |Avg_loss:{:.3f}'.format(fs_train_type.capitalize(),ep,fs_lr,float(loss.item()),avg_loss))
+      log.write('Fs_train_type:{} |Epoch:{} |fs_lr:{:.3e} |Loss:{:2f} |Avg_loss:{:.3f} \n'.format(fs_train_type.capitalize(),ep,fs_lr,float(loss.item()),avg_loss))
       pbar.update(1)
 
       del loss
@@ -358,7 +362,7 @@ if __name__ == '__main__':
         "--exp_id","03_05_train_coco_resdcn101_meta",
         "--visual_path", "temp/visual",
         ]
-  if True:  # True, False
+  if False:  # True, False
     args += [
           #"--test",
           #"--resume",
@@ -376,11 +380,12 @@ if __name__ == '__main__':
           "--resume",
           "--fs_train_type","novel",
           "--fs_lr","8e-3",
-          "--fs_epoch","1",
+          "--fs_epoch","50",
           "--Kshot","10",
           "--test_type","x",
           "--fs_batch_size","40",
-          "--fte_path","../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/model_last.pth"] #_base_256?
+          "--fte_path","../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/model_last.pth"
+          ] #_base_256?
 
   opt=opts().parse(args)
   main(opt)

@@ -67,7 +67,7 @@ class MetaTrainer(object):
 
             avg_loss.update(
                     loss.item(), batch['input'].size(0))
-            Bar.suffix = Bar.suffix + '|LL:{:.2f}|Avg_LL:{:.2f}|lr:{:.2e}|u_lr:{:.2e}'.format(avg_loss.val,avg_loss.avg,lr,opt.update_lr)
+            Bar.suffix = Bar.suffix + '|LL:{:.2e}|Avg_LL:{:.2e}|lr:{:.2e}|u_lr:{:.2e}'.format(avg_loss.val,avg_loss.avg,lr,opt.update_lr)
             #u_lr = UPDATED LR, Avg_LL = Avg_Learner_Loss
             # if not opt.hide_data_time:
             #     Bar.suffix = Bar.suffix + '|Data {dt.val:.3f}s({dt.avg:.3f}s) ' \

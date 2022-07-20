@@ -129,10 +129,10 @@ if __name__ == '__main__':
         #
         #"--exp_id", "02_test_coco_resdcn101_base",
         #"--entire_model", "../exp/ctdet/01_train_coco_resdcn101_base/model_last.pth"
-        "--exp_id", "04_test_coco_resdcn101_meta",
-        "--entire_model", "../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/model_last.pth"
-        #"--exp_id", "06_test_coco_resdcn101_fewshot",
-        #"--entire_model", "../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/entire_model/entire_model_10_last_test.pth"
+        #"--exp_id", "04_test_coco_resdcn101_meta",
+        #"--entire_model", "../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/model_last.pth"
+        "--exp_id", "06_test_coco_resdcn101_fewshot",
+        "--entire_model", "../exp/ctdet_meta/03_05_train_coco_resdcn101_meta/entire_model/entire_model_10_last_test.pth"
         ]
 
   opt = opts().parse(args)

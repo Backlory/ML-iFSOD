@@ -68,29 +68,29 @@ class BaseTrainer(object):
         if k != 'meta':
           batch[k] = batch[k].to(device=opt.device, non_blocking=True)     #batch中各个head对应的tensor都要to device
       
-      #with autocast():
-      output, loss, loss_stats = model_with_loss(batch)
-      loss = loss.mean()
+      with autocast():
+        output, loss, loss_stats = model_with_loss(batch)
+        loss = loss.mean()
       if phase == 'train':
         self.optimizer.zero_grad()
         
-        # self.gradscaler.scale(loss).backward()
-        # self.gradscaler.unscale_(self.optimizer)
-        # self.gradscaler.step(self.optimizer)
-        # self.gradscaler.update()
-        loss.backward()
-        self.optimizer.step()
+        self.gradscaler.scale(loss).backward()
+        self.gradscaler.unscale_(self.optimizer)
+        self.gradscaler.step(self.optimizer)
+        self.gradscaler.update()
+        #loss.backward()
+        #self.optimizer.step()
       batch_time.update(time.time() - end)
       end = time.time()
 
-      Bar.suffix = '{phase}: [{0}][{1}/{2}]|Tot={total:}|ETA={eta:}|lr={lr}'.format(
+      Bar.suffix = '{phase}: [{0}][{1}/{2}]|Tot={total:}|ETA={eta:}|lr={lr:.2e}'.format(
         epoch, iter_id, num_iters, phase=phase,
         total=bar.elapsed_td, eta=bar.eta_td,
         lr = self.optimizer.param_groups[0]['lr'])
       for l in avg_loss_stats:
         avg_loss_stats[l].update(
           loss_stats[l].mean().item(), batch['input'].size(0))
-        Bar.suffix = Bar.suffix + '|{} {:.4f} '.format(l, avg_loss_stats[l].avg)
+        Bar.suffix = Bar.suffix + '|{} {:.4e} '.format(l, avg_loss_stats[l].avg)
       
       # if not opt.hide_data_time:
       #   Bar.suffix = Bar.suffix + '|Data {dt.val:.3f}s({dt.avg:.3f}s) ' \

@@ -398,10 +398,8 @@ class ResMeta(nn.Module):
         self.head_conv = head_conv
         
         self.learner = Learner(heads,head_conv)
-        try:
-            self.learner = self.learner_init(self.learner,opt)
-        except:
-            print("failed load weights of Learner.")
+        self.learner = self.learner_init(self.learner,opt)
+        #print("failed load weights of Learner.")
         for para in self.learner.parameters():
             if para.shape[0] == head_conv:
                 para.requires_grad = False
@@ -730,7 +728,7 @@ class ResFS(nn.Module):
 def get_fs_net(num_layers, heads, head_conv=256):
   block_class, layers = resnet_spec[num_layers]
 
-  model = ResFS(block_class, layers, heads, head_conv=head_conv)
+  model = ResFS(block_class, layers, heads, head_conv=head_conv)    # no gradients
   return model
 
 

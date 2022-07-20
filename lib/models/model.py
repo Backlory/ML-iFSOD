@@ -32,18 +32,21 @@ def load_model(model, model_path, optimizer=None, resume=False,
   state_dict_ = checkpoint['state_dict']   
   state_dict = {}
   
+  model_state_dict = model.state_dict()
   # convert data_parallal to model
   for k in state_dict_:
     if k.startswith('module') and not k.startswith('module_list'):
       state_dict[k[7:]] = state_dict_[k]
     elif k.startswith('model') and not k.startswith('model_list'):
       state_dict[k[6:]] = state_dict_[k]
-    #elif k.startswith('learner.') and not k.startswith('model_list'):  # ][][][][][][][]only use when test the effect of meta-learning via main_meta.py 
-    #  state_dict[k[8:]] = state_dict_[k]
+    elif k.startswith('learner.') and not k.startswith('model_list'):  # ][][][][][][][]only use when test the effect of meta-learning via main_meta.py 
+      if "learner.reg.2.bias" not in model_state_dict.keys():
+        state_dict[k[8:]] = state_dict_[k];print("learner. to None")
+      else:
+        state_dict[k] = state_dict_[k]
     else:
       state_dict[k] = state_dict_[k]
 
-  model_state_dict = model.state_dict()
 
   # check loaded parameters and created model parameters
   msg = 'If you see this, your model does not fully load the ' + \
@@ -63,7 +66,7 @@ def load_model(model, model_path, optimizer=None, resume=False,
     if not (k in state_dict):
       print('No param {}.'.format(k) + msg)
       state_dict[k] = model_state_dict[k]
-  model.load_state_dict(state_dict, strict=False)  # False
+  model.load_state_dict(state_dict, strict=True)  # False
 
   # resume optimizer parameters
   if optimizer is not None and resume:
